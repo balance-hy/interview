@@ -73,6 +73,8 @@ long_query_time=2
 
 在数据之外，数据库系统还维护看满足特定查找算法的数据结构**（B+树）**，这些数据结构以某种方式引用（指向）数据，这样就可以在这些数据结构上实现高级查找算法，这种数据结构就是索引。
 
+全文索引用的不是B+树
+
 #### 二叉树、红黑树
 
 > 二叉树（Binary Tree）是一种树形数据结构，其中每个节点最多有两个子节点，通常称为左子节点和右子节点。二叉树的每个节点都包含一个数据元素（称为键值）以及指向其左子树和右子树的指针。
@@ -275,3 +277,89 @@ Join优化 能用innerjoin 就不用left join right join，如必须使用 一�
 
 ## 其它
 
+### MVCC
+
+> 事务中的隔离性是如何保证的呢？
+>
+> 锁：排他锁（如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的其他锁）
+>
+> mvcc：多版本并发控制
+
+全称Multi-VersionConcurrencyControl，多版本并发控制。指维护一个数据的多个版本，使得读写操作没有冲突
+
+MVCC的具体实现，主要依赖于数据库记录中的**隐藏字段、undolog日志、readView**。
+
+![image-20240425124624478](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425124624478.png)
+
+**隐藏字段：**
+
+* trx_id(事务id)，记录每一次操作的事务id，是自增的
+* roll_pointer(回滚指针)，指向上一个版本的事务版本记录地址
+
+**undo log:**
+
+* 回滚日志，存储老版本数据
+
+* 版本链：多个事务并行操作某一行记录，记录不同事务修改数据的版本，通过roll_pointer指针形成一个链表
+
+**readView 解决的是一个事务查询选择版本的问题**
+
+* 根据readView的匹配规则和当前的一些事务id判断该访问那个版本的数据，不同的隔离级别快照读是不一样的，最终的访问的结果不一样
+* RC：每一次执行快照读时生成ReadView
+* RR：仅在事务中第一次执行快照读时生成ReadView，后续复用
+
+****
+
+### 主从同步
+
+MySQL主从复制的核心就是二进制日志
+
+>二进制日志（BINLOG）记录了所有的DDL（（数据定义语言）语句和DML数据操纵语言）诺语包，但不包括数据查询（SELECT、SHOW）语句
+
+复制分成三步：
+
+* Master 主库在事务提交时，会把数据变更记录在二进制日志文件 Binlog 中。
+
+* 从库读取主库的二进制日志文件 Binlog，写入到从库的中继日志 RelayLog
+
+* slave 从库重做中继日志中的事件，将改变反映它自己的数据。
+
+****
+
+### 分库分表
+
+分库分表的时机：
+
+* 前提，项目业务数据逐渐增多，或业务发展比较迅速单表的数据量达1000W或20G以后
+
+* 优化已解决不了性能问题(主从读写分离、查询索引..)
+
+* IO瓶颈（磁盘IO、网络IO）、CPU瓶颈（聚合查询、连接数太多）
+
+#### 垂直分库
+
+按业务拆分
+
+![image-20240425140013839](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425140013839.png)
+
+#### 垂直分表
+
+将大数据和小数据分开，可以分在不同库也可以在同一个库中拆分
+
+![image-20240425140052360](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425140052360.png)
+
+#### 水平分库
+
+就是一个库中数据太大，分到不同库存储
+
+![image-20240425140341990](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425140341990.png)
+
+#### 水平分表
+
+就是一张表数据过大，水平拆分开
+
+![image-20240425140530866](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425140530866.png)
+
+#### 产生新问题
+
+![image-20240425140839412](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425140839412.png)
