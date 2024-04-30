@@ -99,6 +99,15 @@ Spring为方法创建代理、添加事务通知、前提条件都是该方法�
 
 ![image-20240425154101566](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425154101566.png)
 
+### BeanFactory 和 FactoryBean 的区别
+
+`BeanFactory`和`FactoryBean`都是Spring框架中的重要接口，但它们的职责和使用场景是不同的。
+
+1. **BeanFactory**：`BeanFactory`是Spring框架中最核心的接口，它提供了高级的IoC（控制反转）功能。`BeanFactory`负责创建和管理Spring应用中的bean，包括bean的创建、初始化、装配以及销毁。当我们在Spring配置文件中定义一个bean时，Spring的`BeanFactory`就会负责创建和管理这个bean。
+2. **FactoryBean**：`FactoryBean`是一个工厂Bean，可以用来产生其他的bean。当我们需要创建的bean的初始化逻辑比较复杂，或者需要进行一些特殊的配置时，就可以使用`FactoryBean`。`FactoryBean`的`getObject()`方法用来返回由FactoryBean创建的bean实例，`getObjectType()`方法返回FactoryBean创建的bean的类型，`isSingleton()`方法用来确定由FactoryBean创建的bean是否是单例。
+
+总的来说，`BeanFactory`是Spring的IoC容器，负责创建和管理bean；而`FactoryBean`是一个可以产生或修饰对象创建的工厂bean，通常用来封装复杂的初始化逻辑。
+
 ## springmvc
 
 ### springmvc的执行流程

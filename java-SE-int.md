@@ -104,6 +104,15 @@ n-1去与是为了代替取模运算
 
 ![image-20240426194740560](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240426194740560.png)
 
+###  Arrays.sort底层是什么排序算法
+
+在 Java 中，`Arrays.sort()` 方法的底层排序算法取决于输入数据类型的不同。
+
+1. **基本数据类型**（如 `int`、`double` 等）：
+   - 对于基本数据类型，`Arrays.sort()` 使用的是一种名为 **Dual-Pivot Quicksort** 的排序算法。这是一种**改进的快速排序算法**，它在大多数情况下表现得很好，并且在平均情况下具有 O(n log n) 的时间复杂度。
+2. **对象类型**（如 `String`、自定义对象等）：
+   - 对于对象类型，`Arrays.sort()` 使用的是 **TimSort** 算法(改编自python)。**TimSort 是结合了归并排序（Merge Sort）和插入排序（Insertion Sort）的排序算法**，并且针对部分有序的数组有很好的性能。它在大多数情况下表现优异，并且具有 O(n log n) 的时间复杂度。
+
 ## JUC
 
 ### 线程基础
@@ -151,16 +160,16 @@ n-1去与是为了代替取模运算
 
 或者用lock的condition
 
-> notify和 nnotifyAll有什么区别？
+> notify和 notifyAll有什么区别？
 
 - **notifyAll**:唤醒所有wait的线程
-- **notify**：只随机唤醒一个wait线程
+- **notify**：根据调度唤醒一个wait线程
 
 > 在java中wait和sleep方法的不同?
 
 **共同点**
 
-wait(），wait(long）和sleep(long) 的效果都是**让当前线程暂时放弃CPU的使用权**，进入阻塞状态
+wait() , wait(long) 和 sleep(long) 的效果都是**让当前线程暂时放弃CPU的使用权**，进入阻塞状态
 
 **不同点**
 
@@ -187,7 +196,7 @@ wait(），wait(long）和sleep(long) 的效果都是**让当前线程暂时放�
 - 使用stop方法强行终止（不推荐，方法已作废）
 - 使用interrupt方法中断线程
   - 打断阻塞的线程（sleep，wait，join）的线程，线程会抛出InterruptedException异常
-  - 打断正常的线程，可以根据打断状态来标记是否退出线程(其实也就是1)
+  - 打断正常的线程，可以根据打断状态来标记是否退出线程(其实也就是方式1)
 
 ****
 
@@ -270,6 +279,7 @@ CAS的全称是：Compare And Swap(**比较再交换**)，它体现的一种乐�
   * 用volatile修饰共享变量，能够防止编译器等优化发生，让一个线程对共享变量的修改对另一个线程可见
 * 禁止进行指令重排序
   * 用volatile修饰共享变量会在读、写共享变量时加入不同的屏障，阻止其他读写操作越过屏障，从而达到阻止重排序的效果
+  * **考虑两个线程A和B，线程A负责初始化一个对象并将其引用赋值给一个共享变量，线程B负责检查这个共享变量是否已经被初始化。如果线程A的指令被重排，那么可能先将引用赋值给共享变量，然后再初始化对象。这样，线程B可能会看到一个还没有完全初始化的对象。**
 * 不保证原子性
   * 举例来说，如果一个变量的更新操作涉及读取、修改和写入三个步骤，而这些步骤之间没有被同步控制，那么即使这个变量被声明为 `volatile`，其他线程仍然有可能在这些步骤之间插入自己的操作，导致最终结果出现异常。
 
@@ -284,7 +294,7 @@ CAS的全称是：Compare And Swap(**比较再交换**)，它体现的一种乐�
 AQS**常见的实现类**
 
 - ReentrantLock 阻塞式锁
-- Semaph ore 信号量
+- Semaphore 信号量
 - CountDownLatch 倒计时锁
 
 > 虽然 AQS（AbstractQueuedSynchronizer）提供了一种灵活且强大的同步机制，但在 Java 中，synchronized 关键字仍然是最常用的同步工具之一，这是因为 synchronized 具有以下优点：
@@ -367,8 +377,6 @@ ReentrantLock翻译过来是可重入锁，相对于synchronized它具备以下�
 
 #### 如何确定核心线程数
 
-详见 JUC 学习笔记
-
 ![image-20240427161351885](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240427161351885.png)
 
 ****
@@ -430,4 +438,464 @@ Java对象中的四种引用类型：**强引用、软引用、弱引用、虚�
 ![image-20240427170439823](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240427170439823.png)
 
 ## jvm
+
+Java Virtual Machine Java程序的运行环境（java二进制字节码（class）的运行环境）
+
+好处：
+
+* 一次编写，到处运行
+* **自动内存管理，垃圾回收机制**
+
+![image-20240428131327870](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428131327870.png)
+
+> Java虚拟机（JVM）主要由以下几个部分组成：
+>
+> 1. **类加载器（Class Loader）**：负责加载.class文件，每个类只会被加载一次。
+> 2. **运行时数据区（Runtime Data Area）**：包括方法区（Method Area）、堆（Heap）、虚拟机栈（Java Stacks）、本地方法栈（Native Method Stacks）和程序计数器（Program Counter Register）。
+> 3. **执行引擎（Execution Engine）**：负责执行字节码指令。
+> 4. **本地方法接口（Java Native Interface，JNI）**：提供了一种方式，使得Java代码可以调用或被本地应用（如C、C++）调用。
+> 5. **本地方法库（Native Method Libraries）**：这是一组用于实现本地方法的库。
+>
+> interpreter：
+>
+> - 在Java虚拟机（JVM）的执行引擎中，解释器（Interpreter）的主要任务是读取字节码，然后逐条解释执行。这种方式的优点是实现简单，启动速度快，但是执行效率较低。
+> - 当Java程序开始运行时，解释器会先开始工作，逐条解释执行字节码。这种方式可以快速启动程序，但是对于一些被频繁执行的代码（例如循环、热点方法等），解释执行的效率较低。
+> - 为了提高执行效率，JVM引入了即时编译器（JIT Compiler）。当一段代码被频繁执行时，即时编译器会将这段代码编译成本地机器代码，以便直接执行，从而提高执行效率。
+>
+> JIT：
+>
+> - JIT（Just-In-Time）编译器是Java虚拟机（JVM）的一个重要组成部分，它的主要任务是将字节码（Bytecode）编译成本地机器代码，以提高程序的执行效率。
+> - **在Java程序运行的初期，字节码通常会被解释执行**，但是对于一些被频繁调用的代码（例如循环、热点方法等），解释执行的效率较低。这时，JIT编译器就会将这些代码编译成本地机器代码，以便直接执行，从而提高执行效率。
+> - JIT编译器还可以进行一些优化，例如方法内联（Method Inlining）、死代码消除（Dead Code Elimination）、循环优化（Loop Optimization）等，以进一步提高代码的执行效率。
+
+### JVM组成
+
+#### 什么是程序计数器
+
+**程序计数器：**线程私有(无线程安全问题)的，**内部保存的字节码的行号。用于记录正在执行的字节码指令的地址**。
+
+```shell
+javap -v xxx.class # 用于反编译 .class 文件并输出其详细的字节码信息
+```
+
+![image-20240428132554355](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428132554355.png)
+
+****
+
+#### java 堆
+
+**线程共享的区域（有线程安全问题）：**主要用来**保存对象实例，数组等**，当堆中没有内存空间可分配给实例，也无法再扩展时，则抛出Out Of Memory Error异常。
+
+![image-20240428133121796](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428133121796.png)
+
+**元空间主要用于存储类的元数据，这包括类的名称、字段的信息、方法的信息等。此外，元空间还存储了常量池、静态变量、即时编译器优化后的代码等**
+
+java7 是将方法区或者称之为 永久代 放于堆中，但随着程序的运行，方法区会越来越大，变得不可控，故移至本地内存
+
+这种改变本质来说就是为了避免OOM
+
+****
+
+#### 什么是虚拟机栈
+
+> **变量**：局部变量、方法参数和返回值存储在栈（Stack）中。每当一个方法被调用时，JVM都会在栈中创建一个新的栈帧（Stack Frame），这个栈帧用于存储这个方法的局部变量、参数和返回值。
+
+![image-20240428134620116](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428134620116.png)
+
+> 垃圾回收是否涉及栈内存？
+
+垃圾回收主要指就是堆内存。当栈帧弹栈以后，内存就会释放。**不涉及！**
+
+> 栈内存分配越大越好吗？
+
+未必，默认的栈内存通常为1024k，一般不需要我们修改。
+
+栈帧过大会导致线程数变少，例如，机器总内存为512m，目前能活动的线程数则为512个，如果把栈内存改为2048k，那么**活动线程**数就会减半。
+
+> 方法内的局部变量是否线程安全？
+
+* 如果方法内**局部变量没有逃离方法的作用范围**(比如return 局部变量)，它是线程安全的
+* 如果是**局部变量引用了对象，并逃离方法的作用范围**，需要考虑线程安全
+
+> 栈内存溢出情况
+
+* 栈帧过多导致栈内存溢出，**典型问题：递归调用**
+
+* 栈帧过大导致栈内存溢出, 一般不会出现
+
+> Java虚拟机（JVM）的本地方法栈（Native Method Stack）是用来支持Java的Native方法执行的。Native方法是用Java以外的语言（如C、C++等）编写的方法，它们通常用来执行一些和系统相关的、需要高 效率的、或者和硬件交互的任务。
+>
+> 当一个线程调用一个Native方法时，JVM会进入一个全新的工作区域，这个工作区域就是本地方法栈。在本地方法栈中，JVM不再有执行控制权，它将控制权交给了Native方法。当Native方法执行完毕后，它会返回给Java线程，然后JVM会恢复执行控制权。
+
+#### 能不能解释一下方法区（元空间）？
+
+![image-20240428140105643](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428140105643.png)
+
+
+
+> 常量池
+
+![image-20240428141445567](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428141445567.png)
+
+![image-20240428141526420](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428141526420.png)
+
+> 常量池（Constant Pool）和运行时常量池（Runtime Constant Pool）是Java虚拟机（JVM）中的两个重要概念，它们的主要区别在于生命周期和存储内容。
+>
+> 1. **常量池**：常量池是Java类文件（.class文件）的一部分，它包含了一个Java类或接口中的常量信息，包括直接常量（如字符串、整数、浮点数等）和符号引用（如类和接口的全限定名、字段的名称和描述符、方法的名称和描述符等）。常量池是静态的，它的内容在类文件创建时就已经确定，不会在运行时改变。
+> 2. **运行时常量池**：运行时常量池是每个类或接口在JVM内存中的表示形式的一部分，它在类或接口被加载到JVM时创建。运行时常量池包含了常量池的所有信息，以及可能会在运行时新生成的常量（如String的intern()方法可能会在运行时将新的字符串添加到运行时常量池）。运行时常量池是动态的，它的内容可以在运行时改变。
+>
+> 总的来说，常量池是类文件的一部分，它的内容在编译时就已经确定；而运行时常量池是类或接口在JVM内存中的表示形式的一部分，它的内容可以在运行时改变。
+
+****
+
+#### 你听过直接内存吗？
+
+直接内存（Direct Memory）是Java中的一种特殊类型的内存，**它并不是Java虚拟机堆内存的一部分，而是直接分配在本地内存中的。**
+
+**直接内存主要被用于NIO**（New Input/Output）这种基于通道（Channel）与缓冲区（Buffer）的I/O方式。当我们读取或写入一个文件时，如果使用**传统的I/O流，数据会被读取到JVM堆内存中，然后再从堆内存写入到文件中。**这就涉及到在堆内存和本地内存之间进行数据拷贝，这个过程的开销是相当大的。
+
+而如果使用**直接内存，数据可以直接被读取到本地内存中，然后再从本地内存写入到文件中**，避免了在堆内存和本地内存之间进行数据拷贝，从而提高了I/O操作的性能。
+
+***需要注意的是，虽然直接内存的性能更高，但是它的分配和回收成本都比堆内存要高，因为不受jvm内存回收管理。因此，只有当进行大量的I/O操作，且数据量较大时，使用直接内存才会带来性能上的优势。***
+
+> Java的NIO（New I/O）和Linux的非阻塞I/O以及I/O多路复用都是为了提高I/O效率而设计的技术，但它们的工作方式有所不同。
+>
+> 1. **非阻塞I/O**：在Linux中，非阻塞I/O是指当一个I/O操作不能立即完成时，不会阻塞当前线程，而是立即返回。这样，线程可以继续执行其他任务，而不是等待I/O操作完成。但是，线程需要不断地轮询I/O操作是否完成，这会消耗一定的CPU资源。
+> 2. **I/O多路复用**：I/O多路复用是指使用一个或少数几个线程来管理多个I/O操作。当一个I/O操作准备好（例如，数据已经准备好可以被读取，或者可以写入数据）时，线程会被通知，然后进行数据的读写。这样，线程不需要不断地轮询I/O操作是否完成，可以更有效地利用CPU资源。
+> 3. **Java NIO**：Java的NIO更类似于I/O多路复用。在Java NIO中，可以使用一个Selector来管理多个Channel，当一个Channel准备好（例如，数据已经准备好可以被读取，或者可以写入数据）时，Selector会被通知，然后进行数据的读写。这样，一个线程就可以管理多个I/O操作，提高了I/O效率。
+
+****
+
+### 类加载器
+
+> 类加载器（ClassLoader）和类加载子系统（Class Loading Subsystem）是Java虚拟机（JVM）中的两个重要概念，它们之间的关系是：类加载器是类加载子系统的一部分，负责实现类加载子系统的主要功能。
+>
+> 1. **类加载子系统**：类加载子系统是JVM的一个重要组成部分，它负责从文件系统或网络中加载Java类，然后将这些类转换成JVM可以执行的内部表示形式。类加载子系统主要包括以下几个步骤：加载（Loading）、链接（Linking）和初始化（Initialization）。
+> 2. **类加载器**：类加载器是类加载子系统的一部分，它负责实现类加载子系统的加载步骤。类加载器从文件系统或网络中读取Java类的字节码，然后将这些字节码转换成JVM内部的数据结构（即类）。Java提供了一些内置的类加载器，如系统类加载器（System ClassLoader）、扩展类加载器（Extension ClassLoader）和引导类加载器（Bootstrap ClassLoader），同时也允许用户自定义类加载器。
+
+#### 什么是类加载器，类加载器有哪些
+
+*JVM只会运行二进制文件，类加载器的作用就是将字节码文件加载到JVM中，从而让Java程序能够启动起来*
+
+![image-20240428142842903](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428142842903.png)
+
+****
+
+#### 双亲委派机制
+
+***如果要加载某一个类，先委托上一级的加载器进行加载，如果上级加载器也有上级，则会继续向上委托，如果该类委托上级没有被加载，子加载器尝试加载该类***
+
+为什么要使用这样的机制？
+
+- 通过双亲委派机制可以避免某一个类被重复加载，当父类已经加载后则无需重复加载，保证唯一性
+- 为了安全，保证类库API不会被修改
+
+![image-20240428143825383](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428143825383.png)
+
+****
+
+#### 类加载的执行流程
+
+类从加载到虚拟机中开始，直到卸载为止，它的整个生命周期包括了：加载、验证、准备、解析、初始化、使用和卸载这7个阶段。其中，验证、准备和解析这三个部分统称为连接(linking)
+
+![image-20240428150412791](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428150412791.png)
+
+**加载：**
+
+- 通过类的全名，获取类的二进制数据流。
+- 解析类的二进制数据流为方法区内的数据结构（Java类模型）
+- 创建java.lang.Class类的实例，表示该类型。作为方法区这个类的各种数据的访问入口
+
+其实就是把类的二进制数据流读入到运行时数据区，将类信息存在元空间，将类class对象存在堆中，方便后期创建对象使用。
+
+![image-20240428150857010](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428150857010.png)
+
+****
+
+**验证：**验证类是否符合JVM规范，安全性检查
+
+(1)文件格式验证
+
+(2)元数据验证格式检查
+
+(3)字节码验证
+
+***前三项都是格式检查，如：文件格式是否错误、语语法是否错误、字节码是否合规***
+
+(4)符号引用验证
+
+- Class文件在其常量池会通过字符串记录自己将要使用的其他类或者方法，检查它们是否存在
+
+****
+
+**准备：**为类变量(static 修饰的变量)分配内存并设置类变量初始值
+
+- static变量，分配空间在准备阶段完成（设置默认值），赋值在初始化阶段完成 ` static`
+- static变量是final的基本类型，以及字符串常量，值已确定，赋值在准备阶段完成 `static final int`
+- static变量是final的引用类型，那么赋值也会在初始化阶段完成 `static final Object`
+
+****
+
+**解析：**把类中的符号引用转换为直接引用
+
+方法中调用了其他方法，方法名可以理解为符号引用，而直接引用就是使用指针直接指向方法。
+
+![image-20240428151826373](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428151826373.png)
+
+****
+
+**初始化：**对类的静态变量，静态代码块执行初始化操作
+
+如果初始化一个类的时候，其父类尚未初始化，则优先初始化其父类
+
+如果同时包含多个静态变量和静态代码块，则按照自上而下的顺序依次执行。
+
+****
+
+**使用：**
+
+JVM开始从入口方法开始执行用户的程序代码
+
+- 调用静态类成员信息(比如：静态字段、静态方法）
+- 使用new关键字为其创建对象实例
+
+****
+
+**卸载：**用户程序结束之后，jvm就会销毁创建的class对象
+
+****
+
+### 垃圾回收
+
+#### 对象什么时候可以被垃圾器回收
+
+垃圾回收主要指堆中区域。
+
+***简单一句就是：如果一个或多个对象没有任何的引用指向它了，那么这个对象现在就是垃圾，如果定位了垃圾，则有可能会被垃圾回收器回收。***
+
+如果要定位什么是垃圾，有两种方式来确定**，第一个是引用计数法，第二个是可达性分析算法**
+
+>引用计数法
+
+一个对象被引用了一次，**在当前的对象头上递增一次引用次数**，如果这个对象的引用次数为0，代表这个对象可回收
+
+当对象间出现了循环引用的话则引用计数法就会失效，从而导致内存泄漏
+
+![image-20240428152823366](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428152823366.png)
+
+> 可达性分析算法
+
+现在的虚拟机采用的都是通过可达性分析算法来确定哪些内容是垃圾。
+
+![image-20240428152934401](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428152934401.png)
+
+> 哪些对象可以作为 GC Root 呢
+
+![image-20240428153136375](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428153136375.png)
+
+这里的虚拟机栈指的就是正在活动的线程使用的对象
+
+****
+
+#### JVM垃圾回收算法有哪些？
+
+- 复制算法 年轻代垃圾回收器使用多
+- 标记清除算法
+- 标记整理算法 老年代垃圾回收器使用多
+
+> 复制算法 年轻代
+
+复制算法：将原有的内存空间一分为二，每次只用其中的一块，正在使用的对象复制到另一个内存空间中，然后将该内存空间清空，交换两个内存的角色，完成垃圾的回收
+
+![image-20240428153826287](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428153826287.png)
+
+> 标记清除算法 使用较少
+
+标记清除算法，是将垃圾回收分为2个阶段，分别是**标记和清除**
+
+- 根据**可达性分析算法得出的垃圾进行标记**
+- 对这些标记为可回收的内容进行垃圾回收
+
+![image-20240428153544603](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428153544603.png)
+
+> 标记整理算法 老年代
+
+标记整理算法，是将垃圾回收分为3个阶段，分别是**标记和清除和整理**
+
+- 根据**可达性分析算法得出的垃圾进行标记**
+- 对这些标记为可回收的内容进行垃圾回收
+- 移动内存，使其连贯
+
+![image-20240428153658636](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428153658636.png)
+
+****
+
+#### 说一下JVM中的分代回收
+
+在java8时，堆被分为了两份：新生代和老年代【1：2】
+
+![image-20240428154244624](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428154244624.png)
+
+![image-20240428154354950](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428154354950.png)
+
+> MinorGC.MixedGC、FullGC的区别是什么
+
+> 1. **Minor GC**：**当新生代（特别是Eden区）的内存空间满了**，就会触发Minor GC。在Minor GC过程中，JVM会清理新生代的内存空间，存活的对象会被移动到Survivor区或者老年代。
+> 2. **Mixed GC**：Mixed GC的触发时机比较复杂，它由JVM的垃圾回收器（例如G1垃圾回收器）决定。一般来说，当老年代的内存使用率达到一定阈值，且在进行了一定次数的Minor GC后，就会触发Mixed GC。在Mixed GC过程中，JVM会清理新生代和部分老年代的内存空间。
+> 3. **Full GC**：Full GC的触发时机也比较复杂，它可能由以下几种情况触发：
+>    - 老年代的内存空间满了。
+>    - 永久代（在Java 8被元空间Metaspace替代）的内存空间满了。
+>    - System.gc()被显式调用。
+>    - 上一次GC后，Heap的剩余空间小于分配给某个对象的空间。
+>    - Minor GC后，多次Survivor空间不足以分配对象时。
+
+![image-20240428162931857](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428162931857.png)
+
+****
+
+#### 说一下JVM有哪些垃圾回收器？
+
+在jvm中，实现了多种垃圾收集器，包括：
+
+* 串行垃圾收集器
+* 并行垃圾收集器 jdk默认垃圾回收器
+* CMS(并发)垃圾收集器 老年代垃圾回收
+* G1垃圾收集器
+
+> 串行垃圾收集器
+
+![image-20240428163244851](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163244851.png)
+
+> 并行垃圾收集器 jdk默认垃圾回收器
+
+![image-20240428163314345](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163314345.png)
+
+> CMS(并发)垃圾收集器
+
+![image-20240428163712580](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163712580.png)
+
+初始标记只会标记和 GC ROOT 直接相关联的对象，并发标记会继续探寻和扩展，重新标记是因为，在并发标记时，其余线程并非阻塞，有可能产生了新的引用（原来未引用）。
+
+![image-20240428163952746](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163952746.png)
+
+
+
+****
+
+#### 详细聊一下G1垃圾回收器
+
+* **应用于新生代和老年代，在JDK9之后默认使用G1**
+* 划分成多个区域，每个区域都可以充当eden，survivor，old，humongous，其中humongous专为大对象准备
+
+* **采用复制算法**
+* 响应时间与吞吐量兼顾
+* 分成三个阶段：新生代回收、并发标记、混合收集
+* **如果并发失败（即回收速度赶不上创建新对象速度），会触发Full GC**
+
+![image-20240429151002812](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151002812.png)
+
+> 新生代回收
+
+![image-20240429151216078](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151216078.png)
+
+![image-20240429151329484](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151329484.png)
+
+> 年轻代垃圾回收+并发标记
+
+![image-20240429151457239](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151457239.png)
+
+![image-20240429151601637](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151601637.png)
+
+![image-20240429151707868](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151707868.png)
+
+复制完成，内存得到释放。进入下一轮的新生代回收、并发标记、混合收集
+
+> G1（Garbage-First）垃圾回收器是一种面向服务器的垃圾回收器，它在Java 7中被引入，从Java 9开始成为默认的垃圾回收器。G1垃圾回收器的主要目标是提供高吞吐量以及可预测的停顿时间，即尽可能地减少垃圾回收过程中的暂停时间。
+>
+> G1垃圾回收器的工作原理如下：
+>
+> 1. **划分区域**：G1垃圾回收器将堆内存划分为多个大小相等的独立区域（Region），每个区域可能是Eden区、Survivor区或者Old区。
+> 2. **并行与并发**：G1垃圾回收器在新生代的垃圾回收阶段（即Minor GC）使用并行（Parallel）方式，多个GC线程同时工作，但是用户线程会被暂停；在老年代的垃圾回收阶段，G1垃圾回收器使用并发（Concurrent）方式，GC线程和用户线程同时进行。
+> 3. **回收过程**：G1垃圾回收器的回收过程包括初始标记（Initial Marking）、并发标记（Concurrent Marking）、最终标记（Final Marking）和筛选回收（Live Data Counting and Evacuation）四个阶段。
+> 4. **Mixed GC**：G1垃圾回收器引入了Mixed GC，它在新生代进行Minor GC的同时，也清理掉老年代中的一部分内存，以避免老年代的内存使用过高导致的Full GC。
+> 5. **可预测的停顿时间**：G1垃圾回收器可以设置期望的停顿时间目标，它会根据这个目标来决定每次回收多少区域的内存。
+
+****
+
+#### 强引用、弱引用、软引用、虚引用的区别
+
+![image-20240429152239078](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429152239078.png)
+
+![image-20240429152328717](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429152328717.png)
+
+![image-20240429152603054](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429152603054.png)
+
+### JVM实践
+
+#### JVM调优的参数可以在哪里设置
+
+- war包部署在tomcat中设置
+- jar包部署在启动参数设置 docker在dockerfile的env处设置
+
+****
+
+#### 用的JVM调优的参数都有哪些？
+
+对于JVM调优，**主要就是调整年轻代、老年代、元空间的内存空间大小及使用的垃圾回收器类型。**
+
+<img src="https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429153400471.png" alt="image-20240429153400471" style="zoom:50%;" />
+
+
+
+<img src="https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429153530713.png" alt="image-20240429153530713" style="zoom:50%;" />
+
+<img src="https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429153651683.png" alt="image-20240429153651683" style="zoom:50%;" />
+
+<img src="https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429153731013.png" alt="image-20240429153731013" style="zoom: 67%;" />
+
+****
+
+#### 说一下JVM调优的工具？
+
+命令工具
+
+* jps 进程状态信息
+* jstack pid **查看java进程内线程**的堆栈信息
+* jmap 用于生成堆转内存快照、内存使用情况
+* jhat 堆转储快照分析工具
+* jstat JVM统计监测工具
+
+可视化工具
+
+* jconsole 用于对jvm的内存，线程，类的监控
+* VisualVM 能够监控线程，内存情况
+
+#### Java内存溢出的排查思路？
+
+一共有三处可能导致虚拟机内存溢出的问题
+
+* 虚拟机栈
+  * Stack OverFlow Error 一般为递归
+* 方法区
+  * Out Of Memory Error:Metaspace,
+* 堆
+  * Out Of Memory Error:java heap space
+
+但是如果是微服务项目或者上线的单体项目，内存溢出可能直接就导致无法启动，此时如何分析呢
+
+* **通过jmap或设置jvm参数获取堆内存快照dump**
+* 通过工具，VisualVM去分析dump文件，VisualVM可以加载离线的dump文件
+* 通过查看堆信息的情况，可以大概定位内存溢出是哪行代码出了问题
+* 找到对应的代码，通过阅读上下文的情况，进行修复即可
+
+#### CPU飚高排查方案与思路？
+
+![image-20240429165527253](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429165527253.png)
+
+`top`和`ps`都是Linux系统中常用的进程查看命令，但它们的功能和使用场景有所不同。
+
+1. **top命令**：`top`命令可以**实时动态地查看系统的整体运行状态**，包括CPU使用率、内存使用率、运行进程数、负载、运行时间等信息。同时，它还可以显示所有进程的详细信息，包括进程ID、用户ID、CPU使用率、内存使用率、运行时间等。`top`命令的输出会不断刷新，以显示最新的系统状态。
+2. **ps命令**：`ps`命令用于显示当前系统中的进程状态，包括进程ID、终端ID、CPU使用时间、进程状态等信息。与`top`命令不同，`ps`命令**只会显示一次进程信息，不会动态刷新**。`ps`命令通常用于查看某个特定进程的状态，或者配合其他命令（如`grep`）使用。
+
+总的来说，`top`命令更适用于需要实时监控系统状态和进程状态的场景，而`ps`命令更适用于需要查看一次性进程信息的场景。
 
