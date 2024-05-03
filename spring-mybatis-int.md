@@ -66,6 +66,7 @@ Spring为方法创建代理、添加事务通知、前提条件都是该方法�
 * Bean的前置处理器BeanPostProcessor
 * 初始化方法(InitializingBean、init-method)
 * Bean的后置处理器BeanPostProcessor
+* 使用
 * 销毁bean
 
 **Aware接口允许Bean感知到其所处的环境或容器，并与之进行交互。**
@@ -97,16 +98,41 @@ Spring为方法创建代理、添加事务通知、前提条件都是该方法�
 
 #### 构造注入
 
+**使用Lazy注解**：可以在其中一个类上使用@Lazy注解，这样这个类在初始化的时候不会去创建依赖的bean，而是等到真正使用的时候再去创建。
+
 ![image-20240425154101566](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240425154101566.png)
 
-### BeanFactory 和 FactoryBean 的区别
+### BeanFactory 和 FactoryBean 的 区别
 
 `BeanFactory`和`FactoryBean`都是Spring框架中的重要接口，但它们的职责和使用场景是不同的。
 
 1. **BeanFactory**：`BeanFactory`是Spring框架中最核心的接口，它提供了高级的IoC（控制反转）功能。`BeanFactory`负责创建和管理Spring应用中的bean，包括bean的创建、初始化、装配以及销毁。当我们在Spring配置文件中定义一个bean时，Spring的`BeanFactory`就会负责创建和管理这个bean。
-2. **FactoryBean**：`FactoryBean`是一个工厂Bean，可以用来产生其他的bean。当我们需要创建的bean的初始化逻辑比较复杂，或者需要进行一些特殊的配置时，就可以使用`FactoryBean`。`FactoryBean`的`getObject()`方法用来返回由FactoryBean创建的bean实例，`getObjectType()`方法返回FactoryBean创建的bean的类型，`isSingleton()`方法用来确定由FactoryBean创建的bean是否是单例。
+2. **FactoryBean**：Java中的FactoryBean是一种设计模式，它允许开发人**员使用工厂方法来创建和管理bean对象。**在Spring框架中，FactoryBean是一个特殊的bean，它可以用来创建其他bean。**当我们需要根据一定条件创建不同类型的bean时，使用FactoryBean可以更加灵活地进行配置和管理。**
 
 总的来说，`BeanFactory`是Spring的IoC容器，负责创建和管理bean；而`FactoryBean`是一个可以产生或修饰对象创建的工厂bean，通常用来封装复杂的初始化逻辑。
+
+### spring 中用到了哪些设计模式
+
+* 工厂模式，在各种 BeanFactory 以及 ApplicationContext 创建中都用到了
+* 单例模式，比如在创建 bean 的时候，getSingleton 的重载方法中就是 spring 单例模式的实现，创建 Bean 之后将对象从早期 map 中移入到单例 Map
+* 代理模式，Spring AOP 利用了 AspectJ AOP 实现的! AspectJ AOP 的底层用了动态代理
+
+* spring MVC 中的适配器模式
+  在 Spring MVC 中，DispatcherServlet 根据请求信息调用 HandlerMapping，解析请求对应的 Handler。
+  解析到对应的 Handler（也就是我们平常说的 Controller 控制器）后，开始由 HandlerAdapter 适配器处理。
+  HandlerAdapter 作为期望接口，具体的适配器实现类用于对目标类进行适配，Controller 作为需要适配的类。
+
+****
+
+### BeanFactory 和 ApplicationContext 的区别知道吗？
+
+`BeanFactory`和`ApplicationContext`都是Spring框架中的核心接口，它们都用于访问Spring容器。`ApplicationContext`是`BeanFactory`的子接口，也就是说，`ApplicationContext`包含了`BeanFactory`的所有功能，并且还提供了更多的功能。
+
+以下是`BeanFactory`和`ApplicationContext`的主要区别：
+
+1. **启动时机**：`BeanFactory`在明确要求获取bean时才会初始化bean和bean的依赖，也就是说，**`BeanFactory`采用的是延迟加载的方式，只有当我们调用`getBean()`方法时，才会去创建bean。而`ApplicationContext`在启动时就会创建所有的singleton bean，所以`ApplicationContext`采用的是预加载的方式。**
+2. **功能**：**`ApplicationContext`提供了更多的功能，比如国际化支持**、事件发布、资源访问、应用层的Context（如WebApplicationContext）等。而`BeanFactory`主要提供了IoC和DI的基本功能。
+3. **AOP支持**：**`ApplicationContext`有更好的面向切面编程（AOP）的支持，因为它能自动检测并装配`BeanPostProcessor`和`BeanFactoryPostProcessor`类型的bean，而`BeanFactory`需要手动调用。**
 
 ## springmvc
 

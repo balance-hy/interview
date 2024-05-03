@@ -22,7 +22,7 @@ Constructor<Student> constructor = Student.class.getConstructor();
 Student s = constructor.newInstance();
 ```
 
-4. **使用`clone`方法**：如果一个类实现了`Cloneable`接口，那么可以通过调用`clone`方法来创建对象。例如：
+4. **使用`clone`方法**：如果**一个类实现了`Cloneable`接口，那么可以通过调用`clone`方法来创建对象。**例如：
 
 ```java
 Student s1 = new Student();
@@ -39,6 +39,10 @@ Student s = (Student) in.readObject();
 ****
 
 ### class 文件的结构
+
+```shell
+javap -verbose xxx.class
+```
 
 Java的`.class`文件是一种包含了Java程序编译结果的二进制文件。它的结构非常复杂，包含了许多不同的部分。以下是`.class`文件的主要结构：
 
@@ -80,11 +84,11 @@ Java中的抽象类和接口都是用于抽象和封装设计的工具，但它�
 
 1. **默认方法实现**：抽象类可以有默认的方法实现，接口完全是抽象的，不能有任何方法实现（Java 8开始，接口可以有默认方法和静态方法）。
 
-2. **成员变量**：抽象类中可以有成员变量，接口中只能有静态不可变的常量。
+2. **成员变量**：**抽象类中可以有成员变量，接口中只能有静态不可变的常量。**
 
 3. **继承限制**：一个类可以实现多个接口，但只能继承一个抽象类。
 
-4. **构造器**：抽象类可以有构造器，接口不能有构造器。
+4. **构造器**：**抽象类可以有构造器，接口不能有构造器。**
 
 5. **访问修饰符**：接口中所有的方法默认都是public的，而抽象类可以有public、protected和default方法。
 
@@ -104,9 +108,43 @@ Java的三大特性，也被称为面向对象编程（OOP）的三大特性，�
 
 3. **多态（Polymorphism）**：多态是指允许一个接口使用多种实际类型的能力。一个接口的引用可以指向（引用）其任何实现类的对象。程序在运行时会根据对象的实际类型来调用其相应的方法。
 
+*****
+
+### 深拷贝和浅拷贝
+
+深拷贝和浅拷贝是编程中常见的两种复制对象的方式，主要区别在于是否复制对象的引用类型字段。
+
+**浅拷贝**：创建一个新对象，然后将当前对象的非静态字段复制到该新对象，无论这个字段是值类型还是引用类型。**如果字段是值类型，那么对应的值就被复制过去；如果字段是引用类型，则复制的是引用，也就是说新对象和原对象的引用类型字段指向的是同一个对象。**
+
+**深拷贝**：创建一个新对象，然后将当前对象的非静态字段复制到该新对象，对于引用类型的字段，深拷贝会创建一个新的对象，并复制其内容，这样新对象和原对象的引用类型字段指向的是两个不同的对象。
+
+举个例子，假设有一个`Person`类，包含`name`（String类型）和`address`（Address类型）两个字段。浅拷贝会创建一个新的`Person`对象，但`address`字段仍然指向原来的`Address`对象。而深拷贝会创建一个新的`Person`对象，并且还会创建一个新的`Address`对象，新的`Person`对象的`address`字段指向新的`Address`对象。
+
+**在Java中，可以通过实现`Cloneable`接口并重写`clone()`方法来实现浅拷贝。**要实现深拷贝，可以通过序列化（Serialization）或者手动复制所有字段来实现。
+
 ****
 
+### 反射为什么效率低
 
+反射在Java中是一种强大的工具，它允许在运行时动态地访问和修改类的信息。然而，使用反射通常会比直接的Java代码运行得慢，主要有以下几个原因：
+
+1. **类型检查**：在正常的Java代码中，类型检查是在编译时进行的。但是在使用反射时，类型检查必须在运行时进行，这会增加额外的开销。
+2. **方法调用**：使用反射调用方法时，需要通过`Method.invoke`方法，这个方法需要处理很多事情，比如访问权限检查，参数包装和解包装等，这些都会增加额外的开销。
+3. **字段访问**：使用反射访问字段时，也需要通过`Field.get`或`Field.set`方法，这些方法同样需要处理访问权限检查和类型转换等问题，增加了额外的开销。
+4. **动态分派**：反射方法调用需要进行动态分派，即在运行时确定要调用的具体方法。而直接的Java方法调用可以在编译时就确定下来，或者通过虚方法表进行快速查找。
+5. **优化难度**：JVM的即时编译器（JIT）可以对常规的Java代码进行各种优化，如内联，循环展开等。但是对于反射代码，由于其动态性，很多优化都无法进行。
+
+****
+
+### final关键字
+
+`final`关键字在Java中有三种用途：
+
+1. 创建常量：当`final`关键字用在变量前面时，该变量的值就不能被改变，它就成为了一个常量。
+2. 防止方法被重写：当`final`关键字用在方法前面时，子类不能重写（override）这个方法。
+3. 防止类被继承：当`final`关键字用在类前面时，这个类不能被继承。
+
+****
 
 ## 集合
 
@@ -175,6 +213,10 @@ list用了toArray转数组后，如果修改了list内容，数组不会影响�
 
 拉链法，其实就是用链表存储碰撞的值
 
+> HashSet如何去重
+
+首先根据hashCode方法比较两者的哈希值，然后使用equals方法比较两个对象是否真的相同
+
 ### HashMap
 
 > 说一下HashMap的实现原理？
@@ -209,6 +251,11 @@ n-1去与是为了代替取模运算
 **如果结果为 0，表示元素在旧数组中的位置与新数组中的位置相同，它们的索引值在新数组中是不变的**，不需要重新计算。这个操作可以保证原本放在同一链表（或红黑树）上的元素仍然保持在同一位置，不会被移动。
 
 **如果结果不为 0，表示元素在新数组中的位置需要重新计算**。新位置的计算方法是将旧位置的索引值加上旧容量（即 oldCap），这是**因为在新数组中，元素的索引值需要扩展一倍才能保证均匀分布。**
+
+```
+(h = key.hashCode()) ^ (h >>> 16)
+(n - 1) & hash
+```
 
 ![image-20240426194740560](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240426194740560.png)
 
@@ -274,7 +321,117 @@ n-1去与是为了代替取模运算
 
 ![image-20240427131002277](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240427131002277.png)
 
-或者用lock的condition
+```java
+//CountDownLatch
+import java.util.concurrent.CountDownLatch;
+
+CountDownLatch latch1 = new CountDownLatch(1);
+CountDownLatch latch2 = new CountDownLatch(1);
+
+Thread T1 = new Thread(() -> {
+    // T1的代码
+    latch1.countDown();
+});
+
+Thread T2 = new Thread(() -> {
+    try {
+        latch1.await();
+        // T2的代码
+        latch2.countDown();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+});
+
+Thread T3 = new Thread(() -> {
+    try {
+        latch2.await();
+        // T3的代码
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+});
+
+T1.start();
+T2.start();
+T3.start();
+```
+
+```java
+//CyclicBarrier
+import java.util.concurrent.CyclicBarrier;
+
+CyclicBarrier barrier1 = new CyclicBarrier(2);
+CyclicBarrier barrier2 = new CyclicBarrier(2);
+
+Thread T1 = new Thread(() -> {
+    // T1的代码
+    try {
+        barrier1.await();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+});
+
+Thread T2 = new Thread(() -> {
+    try {
+        barrier1.await();
+        // T2的代码
+        barrier2.await();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+});
+
+Thread T3 = new Thread(() -> {
+    try {
+        barrier2.await();
+        // T3的代码
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+});
+
+T1.start();
+T2.start();
+T3.start();
+```
+
+```java
+//Semphore
+import java.util.concurrent.Semaphore;
+
+Semaphore sem1 = new Semaphore(0);
+Semaphore sem2 = new Semaphore(0);
+
+Thread T1 = new Thread(() -> {
+    // T1的代码
+    sem1.release();
+});
+
+Thread T2 = new Thread(() -> {
+    try {
+        sem1.acquire();
+        // T2的代码
+        sem2.release();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+});
+
+Thread T3 = new Thread(() -> {
+    try {
+        sem2.acquire();
+        // T3的代码
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+});
+
+T1.start();
+T2.start();
+T3.start();
+```
 
 > notify和 notifyAll有什么区别？
 
@@ -312,7 +469,14 @@ wait() , wait(long) 和 sleep(long) 的效果都是**让当前线程暂时放弃
 - 使用stop方法强行终止（不推荐，方法已作废）
 - 使用interrupt方法中断线程
   - 打断阻塞的线程（sleep，wait，join）的线程，线程会抛出InterruptedException异常
-  - 打断正常的线程，可以根据打断状态来标记是否退出线程(其实也就是方式1)
+  - 打断正常的线程，可以根据打断状态来标记是否退出线程(其实也就是方式1).
+
+> 多线程暂停线程的方式
+
+1. **使用`sleep`方法**：`Thread.sleep(millis)`方法可以使当前线程暂停指定的毫秒数。这是一个静态方法，会使调用它的线程暂停执行。需要注意的是，`sleep`方法可能会抛出`InterruptedException`。
+2. **使用`wait`方法**：`wait`方法是`Object`类的一个方法，它会使当前线程进入等待状态，直到其他线程调用同一个对象的`notify`或`notifyAll`方法。`wait`方法也可能会抛出`InterruptedException`。
+3. **使用`join`方法**：`join`方法会使当前线程等待，直到调用`join`方法的线程结束。`join`方法也可能会抛出`InterruptedException`。
+4. **使用`LockSupport.park`方法**：`LockSupport.park()`方法可以暂停当前线程，直到其他线程调用`LockSupport.unpark(线程变量)`方法。
 
 ****
 
@@ -708,6 +872,10 @@ java7 是将方法区或者称之为 永久代 放于堆中，但随着程序的
 
 ![image-20240428143825383](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428143825383.png)
 
+> 如何把两个全限定名相同的类加载到jvm
+
+通过自定义类加载器，当两个类加载器不同，这两个类就不同
+
 ****
 
 #### 类加载的执行流程
@@ -783,6 +951,11 @@ JVM开始从入口方法开始执行用户的程序代码
 
 ### 垃圾回收
 
+在学习Java GC 之前，我们需要记住一个单词：
+
+* stop-the-world(STW) 。它会在任何一种GC 算法中发生。
+* stop-the-world 意味着JVM因为需要执行GC而停止了应用程序的执行。**当stop-the-world 发生时，除GC所需的线程外，所有的线程都进入等待状态，直到GC任务完成。**GC 优化很多时候就是减少 stop-the-world 的发生或者说是减少 stop-the-world 的时间。
+
 #### 对象什么时候可以被垃圾器回收
 
 垃圾回收主要指堆中区域。
@@ -856,14 +1029,9 @@ JVM开始从入口方法开始执行用户的程序代码
 
 > MinorGC.MixedGC、FullGC的区别是什么
 
-> 1. **Minor GC**：**当新生代（特别是Eden区）的内存空间满了**，就会触发Minor GC。在Minor GC过程中，JVM会清理新生代的内存空间，存活的对象会被移动到Survivor区或者老年代。
-> 2. **Mixed GC**：Mixed GC的触发时机比较复杂，它由JVM的垃圾回收器（例如G1垃圾回收器）决定。一般来说，当老年代的内存使用率达到一定阈值，且在进行了一定次数的Minor GC后，就会触发Mixed GC。在Mixed GC过程中，JVM会清理新生代和部分老年代的内存空间。
-> 3. **Full GC**：Full GC的触发时机也比较复杂，它可能由以下几种情况触发：
->    - 老年代的内存空间满了。
->    - 永久代（在Java 8被元空间Metaspace替代）的内存空间满了。
->    - System.gc()被显式调用。
->    - 上一次GC后，Heap的剩余空间小于分配给某个对象的空间。
->    - Minor GC后，多次Survivor空间不足以分配对象时。
+> 1. **Minor GC**：Minor GC主要清理新生代（Young Generation）的内存空间。新生代通常分为一个Eden区和两个Survivor区（S0和S1）。大部分新创建的对象首先会被分配到Eden区，**当Eden区满时，就会触发Minor GC。**Minor GC会清理掉Eden区中不再使用的对象，并将还在使用的对象移动到Survivor区或者老年代（Old Generation）。Minor GC的执行频率较高，但每次执行的速度较快。
+> 2. **Full GC**：Full GC会清理整个Java堆，包括新生代和老年代。Full GC通常在以下情况下被触发：老年代空间不足、持久代（PermGen，Java8之前）或元空间（Metaspace，Java8之后）空间不足、System.gc()被显式调用、上一次GC后Heap的增量超过了设定的比例。Full GC的执行频率较低，但每次执行的时间较长，因为需要清理整个Java堆。
+> 3. **Mixed GC**：Mixed GC是在Java 8中引入的一种新的GC类型，主要用于**在新生代和部分老年代之间进行垃圾回收。**Mixed GC的主要目标是在不触发Full GC的情况下，尽可能地清理掉老年代中的垃圾对象，以此来避免执行时间较长的Full GC。Mixed GC通常在新生代的Minor GC之后，以及老年代的使用率达到一定阈值时被触发。
 
 ![image-20240428162931857](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428162931857.png)
 
@@ -890,27 +1058,32 @@ JVM开始从入口方法开始执行用户的程序代码
 
 ![image-20240428163712580](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163712580.png)
 
-初始标记只会标记和 GC ROOT 直接相关联的对象，并发标记会继续探寻和扩展，重新标记是因为，在并发标记时，其余线程并非阻塞，有可能产生了新的引用（原来未引用）。
-
 ![image-20240428163952746](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240428163952746.png)
 
+CMS收集器的运作过程主要分为四个步骤：
 
+1. **初始标记（Initial Mark）**：这个阶段需要"Stop The World"，即暂停所有的其他线程，然后标记所有的根对象，包括根直接引用的对象，以及通过根对象可达的对象。
+2. **并发标记（Concurrent Mark）**：在此阶段，CMS收集器会遍历堆中的对象，找出存活的对象。这个阶段是与用户线程并发执行的，不需要停止用户线程。
+3. **重新标记（Remark）**：这个阶段需要"Stop The World"，主要是为了修正并发标记期间，因用户程序继续运行而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间通常比初始标记阶段的时间长，但是远比并发标记的时间短。
+4. **并发清除（Concurrent Sweep）**：此阶段与用户线程并发执行，不需要停止用户线程，此阶段完成后，CMS收集器会进行一次碎片整理，整理出连续的内存空间。
+
+CMS收集器的优点是并发收集、低停顿，这使得CMS收集器成为很多以响应速度为要求的Java应用的首选，比如网站或者B/S系统的服务器端等。但是CMS收集器对CPU资源非常敏感，同时，CMS收集器无法处理浮动垃圾，可能会出现"Concurrent Mode Failure"失败，需要进行Full GC的清理动作。**另外，CMS也有碎片问题，因为并发清理阶段用户线程还在运行着，不可能像其他收集器一样进行压缩整理，也就无法保证给大对象分配足够的连续空间，**所以在老年代使用CMS收集器时，有可能会出现多次Minor GC后，老年代还有大量空间，但是无法找到足够大的连续空间来分配当前对象，导致提前触发Full GC。
 
 ****
 
-#### 详细聊一下G1垃圾回收器
+#### 详细聊一下G1(Garbage first)垃圾回收器
 
 * **应用于新生代和老年代，在JDK9之后默认使用G1**
 * 划分成多个区域，每个区域都可以充当eden，survivor，old，humongous，其中humongous专为大对象准备
 
-* **采用复制算法**
+* **采用复制算法!!!!!!!!!!!!!!!** 
 * 响应时间与吞吐量兼顾
 * 分成三个阶段：新生代回收、并发标记、混合收集
 * **如果并发失败（即回收速度赶不上创建新对象速度），会触发Full GC**
 
 ![image-20240429151002812](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151002812.png)
 
-> 新生代回收
+> 新生代回收 eden区占5%-6% 会触发 stw 时间短
 
 ![image-20240429151216078](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429151216078.png)
 
@@ -926,6 +1099,8 @@ JVM开始从入口方法开始执行用户的程序代码
 
 复制完成，内存得到释放。进入下一轮的新生代回收、并发标记、混合收集
 
+如果对象过大，会存在连续的区域之中。
+
 > G1（Garbage-First）垃圾回收器是一种面向服务器的垃圾回收器，它在Java 7中被引入，从Java 9开始成为默认的垃圾回收器。G1垃圾回收器的主要目标是提供高吞吐量以及可预测的停顿时间，即尽可能地减少垃圾回收过程中的暂停时间。
 >
 > G1垃圾回收器的工作原理如下：
@@ -934,7 +1109,7 @@ JVM开始从入口方法开始执行用户的程序代码
 > 2. **并行与并发**：G1垃圾回收器在新生代的垃圾回收阶段（即Minor GC）使用并行（Parallel）方式，多个GC线程同时工作，但是用户线程会被暂停；在老年代的垃圾回收阶段，G1垃圾回收器使用并发（Concurrent）方式，GC线程和用户线程同时进行。
 > 3. **回收过程**：G1垃圾回收器的回收过程包括初始标记（Initial Marking）、并发标记（Concurrent Marking）、最终标记（Final Marking）和筛选回收（Live Data Counting and Evacuation）四个阶段。
 > 4. **Mixed GC**：G1垃圾回收器引入了Mixed GC，它在新生代进行Minor GC的同时，也清理掉老年代中的一部分内存，以避免老年代的内存使用过高导致的Full GC。
-> 5. **可预测的停顿时间**：G1垃圾回收器可以设置期望的停顿时间目标，它会根据这个目标来决定每次回收多少区域的内存。
+> 5. **可预测的停顿时间**：**G1垃圾回收器可以设置期望的停顿时间目标，它会根据这个目标来决定每次回收多少区域的内存**，根据时间优先回收存活对象少的老年区。
 
 ****
 
@@ -945,6 +1120,13 @@ JVM开始从入口方法开始执行用户的程序代码
 ![image-20240429152328717](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429152328717.png)
 
 ![image-20240429152603054](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240429152603054.png)
+
+> 在Java中，根据对象的生命周期，引用可以分为强引用、软引用、弱引用和虚引用四种：
+>
+> 1. **强引用（Strong Reference）**：这是最常见的引用类型。如果一个对象具有强引用，那么垃圾回收器绝不会回收它。当内存空间不足，Java虚拟机宁愿抛出OutOfMemoryError错误，使程序异常终止，也不会靠随意回收具有强引用的对象来解决内存不足问题。**代码中常见的直接引用就是强引用。**
+> 2. **软引用（Soft Reference）**：如果一个对象只具有软引用，那么在系统将要发生内存溢出异常之前，将会把这些对象列进回收范围进行第二次回收。如果这次回收还没有足够的内存，才会抛出内存溢出异常。**在Java中，使用SoftReference类来实现软引用。**
+> 3. **弱引用（Weak Reference）**：如果一个对象只具有弱引用，那么在垃圾回收器线程扫描它所管辖的内存区域的过程中，只要发现弱引用关联的对象，不管当前内存空间足够与否，都会回收它的内存。**在Java中，使用WeakReference类来实现弱引用。**
+> 4. **虚引用（Phantom Reference）**："虚引用"顾名思义，就是形同虚设，与其他几种引用不同，虚引用并不影响对象的生命周期。在Java中，使用PhantomReference类来实现虚引用。**如果一个对象只有虚引用，那么它就和没有任何引用一样，随时都可能被垃圾回收器回收，它不能单独使用，必须配合引用队列（ReferenceQueue）使用。**
 
 ### JVM实践
 
@@ -1015,3 +1197,20 @@ JVM开始从入口方法开始执行用户的程序代码
 
 总的来说，`top`命令更适用于需要实时监控系统状态和进程状态的场景，而`ps`命令更适用于需要查看一次性进程信息的场景。
 
+#### 对象一定在堆里面吗
+
+在Java中，对象通常是在堆（Heap）中创建的。这是因为堆是所有线程共享的内存区域，可以容纳大量的数据，而且其生命周期由垃圾回收器管理，适合存放复杂的数据结构如对象和数组。
+
+然而，JVM也提出了一种叫做逃逸分析的技术，通过这种技术，JVM可以判断出哪些对象不会被其他线程访问（即不会“逃逸”出方法或线程），这些对象可以被优化为在栈（Stack）上分配。
+
+逃逸分析的主要步骤如下：
+
+1. JVM分析程序的字节码，找出所有的对象创建操作。
+2. 对于每一个对象创建操作，JVM分析这个对象的引用是否会被其他方法或线程访问。如果一个对象只在一个方法中使用，并且不会被其他线程访问，那么这个对象就不会“逃逸”。
+3. 对于不会“逃逸”的对象，JVM可以选择在栈上分配这个对象，而不是在堆上分配。
+
+栈上的对象和堆上的对象有以下主要区别：
+
+1. **生命周期**：栈上的对象的生命周期与方法的执行周期相同，当方法执行结束，栈上的对象就会被立即释放。而堆上的对象的生命周期由垃圾回收器管理，当对象不再被引用时，垃圾回收器会在合适的时机回收这个对象。
+2. **性能**：栈上的对象分配和回收的效率更高，因为只需要移动栈顶指针。而堆上的对象分配和回收需要更复杂的算法，且可能会引发垃圾回收。
+3. **线程安全**：栈上的对象只能被创建它的线程访问，因此不需要考虑线程同步的问题。而堆上的对象可以被所有线程访问，如果多个线程同时访问一个对象，就需要考虑线程同步的问题。
