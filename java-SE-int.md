@@ -146,6 +146,52 @@ Java的三大特性，也被称为面向对象编程（OOP）的三大特性，�
 
 ****
 
+###  hsahmapfor循环删除key是否存在问题
+
+在Java中，如果你试图在遍历HashMap的过程中删除元素，会遇到`ConcurrentModificationException`异常。这是因为HashMap的迭代器是快速失败的（fail-fast），也就是说，如果在使用迭代器遍历集合的过程中，集合的结构被修改（除了通过迭代器自身的`remove`方法），迭代器将抛出`ConcurrentModificationException`。
+
+以下是一个例子：
+
+```java
+HashMap<String, String> map = new HashMap<>();
+map.put("key1", "value1");
+map.put("key2", "value2");
+
+for (String key : map.keySet()) {
+    if ("key1".equals(key)) {
+        map.remove(key);  // 这将抛出ConcurrentModificationException
+    }
+}
+```
+
+如果你需要在遍历的过程中删除元素，可以使用`Iterator`的`remove`方法，这是安全的：
+
+```java
+HashMap<String, String> map = new HashMap<>();
+map.put("key1", "value1");
+map.put("key2", "value2");
+
+Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
+while (iterator.hasNext()) {
+    Map.Entry<String, String> entry = iterator.next();
+    if ("key1".equals(entry.getKey())) {
+        iterator.remove();  // 这是安全的
+    }
+}
+```
+
+另外，如果你使用的是Java 8，还可以使用`Collection`的`removeIf`方法，这也是安全的：
+
+```java
+HashMap<String, String> map = new HashMap<>();
+map.put("key1", "value1");
+map.put("key2", "value2");
+
+map.keySet().removeIf("key1"::equals);  // 这是安全的
+```
+
+****
+
 ## 集合
 
 ![image-20240426161801822](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240426161801822.png)
@@ -515,6 +561,12 @@ Synchronized【对象锁】采用互斥的方式让**同一时刻至多只有一
 **一旦锁发生了竞争，都会升级成重量级锁！**
 
 ****
+
+#### synchronized锁加粗、锁消除
+
+![image-20240505150701820](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240505150701820.png)
+
+![image-20240505150736566](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240505150736566.png)
 
 #### JMM
 
