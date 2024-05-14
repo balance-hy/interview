@@ -104,12 +104,38 @@ Spring为方法创建代理、添加事务通知、前提条件都是该方法�
 
 ### BeanFactory 和 FactoryBean 的 区别
 
-`BeanFactory`和`FactoryBean`都是Spring框架中的重要接口，但它们的职责和使用场景是不同的。
+`BeanFactory`和`FactoryBean`是Spring框架中两个重要的接口，它们的作用和使用场景是不同的。
 
-1. **BeanFactory**：`BeanFactory`是Spring框架中最核心的接口，它提供了高级的IoC（控制反转）功能。`BeanFactory`负责创建和管理Spring应用中的bean，包括bean的创建、初始化、装配以及销毁。当我们在Spring配置文件中定义一个bean时，Spring的`BeanFactory`就会负责创建和管理这个bean。
-2. **FactoryBean**：Java中的FactoryBean是一种设计模式，它允许开发人**员使用工厂方法来创建和管理bean对象。**在Spring框架中，FactoryBean是一个特殊的bean，它可以用来创建其他bean。**当我们需要根据一定条件创建不同类型的bean时，使用FactoryBean可以更加灵活地进行配置和管理。**
+1. **BeanFactory**：`BeanFactory`是Spring框架中最核心的接口，它提供了高级的IoC（控制反转）功能。`BeanFactory`是一个工厂模式的实现，它使用控制反转来将应用程序的配置和依赖性规范与实际的应用程序代码分离。在Spring中，`BeanFactory`提供了管理和查找bean的功能，例如`getBean(String name)`方法。
 
-总的来说，`BeanFactory`是Spring的IoC容器，负责创建和管理bean；而`FactoryBean`是一个可以产生或修饰对象创建的工厂bean，通常用来封装复杂的初始化逻辑。
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+```
+
+2. **FactoryBean**：`FactoryBean`是一个创建对象的工厂Bean，它的主要作用是产生复杂的或者需要特殊逻辑来创建的bean。当你在Spring配置文件中定义一个bean时，通常bean的类会直接实例化，但是如果这个bean实现了`FactoryBean`接口，那么Spring会调用它的`getObject()`方法来创建实例。
+
+```java
+public class UserFactoryBean implements FactoryBean<User> {
+    @Override
+    public User getObject() throws Exception {
+        // 这里可以进行复杂的初始化逻辑
+        return new User();
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return User.class;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+}
+```
+
+总的来说，`BeanFactory`是一个获取bean的工厂，而`FactoryBean`是一个可以产生或修饰对象的工厂。在实际使用中，`BeanFactory`更多的是被用来获取bean，而`FactoryBean`则是被用来创建复杂的bean。
 
 ### spring 中用到了哪些设计模式
 
