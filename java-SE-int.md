@@ -192,6 +192,12 @@ map.keySet().removeIf("key1"::equals);  // 这是安全的
 
 ****
 
+### 基于接口/类的动态代理
+
+jdk动态代理，已经继承了一个类故使用实现接口的方式
+
+cglib基于类的动态代理
+
 ## 集合
 
 ![image-20240426161801822](https://raw.githubusercontent.com/balance-hy/typora/master/thinkbook/image-20240426161801822.png)
@@ -231,7 +237,7 @@ List<Object> list1 = Arrays.asList(array); //数组转集合
 
 Arrays.asList转换list之后，如果修改了数组的内容，list会受影响，**因为它的底层使用的Arrays类中的一个内部类ArrayList来构造的集合**，在这个集合的构造器中，把我们传入的这个集合进行了包装而已，**最终指向的都是同一个内存地址**
 
-list用了toArray转数组后，如果修改了list内容，数组不会影响，**当调用了toArray以后，在底层是它是进行了数组的拷贝，跟原来的元素就没关系了**，所以即使list修改了以后，数组也不受影响
+list用了toArray转数组后，如果修改了list内容，数组不会影响，**当调用了toArray以后，在底层是它是进行了数组的拷贝，跟原来的元素就没关系了**，所以即使list修改了以后，数组也不受影响，但如果是对象，仍然会受影响，因为是浅拷贝，采用`System.arraycopy()`
 
 ****
 

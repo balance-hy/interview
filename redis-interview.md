@@ -203,7 +203,7 @@ Redis支持**8种不同策略**来选择要删除的key:
 
 > 更好的分布式锁实现
 
-![image-20240423210810037](C:\Users\18356\AppData\Roaming\Typora\typora-user-images\image-20240423210810037.png)
+![image-20240423210810037](http://img.balance.wiki//blog/image-20240423210810037.png)
 
 
 
@@ -219,7 +219,7 @@ Redis支持**8种不同策略**来选择要删除的key:
 
 无论是java中的可重入锁还是redis中的可重入锁都是基于线程id来判断是否是同一线程重复获取同一把锁
 
-![image-20240423211400323](C:\Users\18356\AppData\Roaming\Typora\typora-user-images\image-20240423211400323.png)
+![image-20240423211400323](http://img.balance.wiki//blog/image-20240423211400323.png)
 
 #### 主从一致性
 
@@ -355,4 +355,4 @@ Redis中的大key问题是指某个key对应的value的大小非常大，或者�
 
 1. **避免使用大key**：在设计数据模型时，应尽量避免使用大key。例如，可以将一个大的Hash拆分为多个小的Hash。
 2. **定期检查和清理大key**：可以使用`SCAN`命令配合`DEBUG OBJECT`命令，或者使用Redis自带的`redis-cli --bigkeys`命令，定期检查和清理大key。
-3. **优化大key的操作**：对大key的操作应尽量分批进行，避免一次性操作大量的数据。例如，可以使用`HSCAN`、`SSCAN`、`ZSCAN`命令来分批获取Hash、Set、ZSet的元素，使用`LRANGE`命令来分批获取List的元素。
+3. **优化大key的操作**：对大key的操作应尽量分批进行，避免一次性操作大量的数据。例如，可以使用`HSCAN`、`SSCAN`、`ZSCAN`命令来分批获取Hash、Set、ZSet的元素，使用`LRANGE`命令来分批获取List的元素。****
